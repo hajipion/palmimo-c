@@ -136,11 +136,13 @@ def _find_volunteer(rig: Rig, state: _State, client: Any, model: str, timeout: f
     return None
 
 
-def _settle_distance(rig: Rig, state: _State, ranger: Any, target: float, walk_seconds: float) -> float | None:
+def _settle_distance(
+    rig: Rig, state: _State, ranger: Any, target: float, walk_seconds: float, seconds: float
+) -> float | None:
     """Coach the volunteer to the target distance, stepping forward a little if they are far."""
     steps = 0
     last = None
-    deadline = time.monotonic() + 45
+    deadline = time.monotonic() + seconds
     while time.monotonic() < deadline and not state.skip.is_set():
         distance = _measure(rig, ranger, 1.0)
         if distance is None:
@@ -205,23 +207,24 @@ def run(args: argparse.Namespace) -> None:
 
         distance = args.distance_m
         if ranger is not None:
-            measured = _settle_distance(rig, state, ranger, args.distance_m, args.walk_seconds)
+            measured = _settle_distance(rig, state, ranger, args.distance_m, args.walk_seconds, args.settle_seconds)
             state.skip.clear()
             if measured is not None:
                 distance = measured
         say("ありがとうございます。")
 
+        distance = min(max(round(distance, 1), 0.7), 3.5)
         say(speech.START)
         say(speech.distance_line(distance))
         say(speech.ADJUSTING)
-        levels = eligible_levels(args.distance_m, args.panel_mm)
+        levels = eligible_levels(distance, args.panel_mm)
         session = QuickSession(levels)
-        print(f"[exam] sized for {args.distance_m:g} m, levels {levels}", flush=True)
+        print(f"[exam] sized for {distance:g} m, levels {levels}", flush=True)
         time.sleep(1.0)
         say(speech.ADJUSTED)
 
         while not session.done:
-            gap = gap_px(session.acuity, args.distance_m, args.panel_mm)
+            gap = gap_px(session.acuity, distance, args.panel_mm)
             frame = render_gray8(gap, session.direction)
             state.frame, state.ring = frame, state.ring + 1
             shown = rig.show_frame(to_rgb565(frame))
@@ -247,7 +250,12 @@ def main() -> None:
     """Parse the launch settings and run one exam."""
     parser = argparse.ArgumentParser(description="Palmimo が検査員になる視力チェック（参考値。医療用ではありません）")
     parser.add_argument("--port", type=int, default=8010, help="予備の回答ページのポート")
-    parser.add_argument("--distance-m", type=float, default=3.0, help="検査する距離 m（環の大きさはこの距離で決める）")
+    parser.add_argument(
+        "--distance-m", type=float, default=2.0, help="めざす距離 m。環の大きさは実際に測った距離で決める"
+    )
+    parser.add_argument(
+        "--settle-seconds", type=float, default=20.0, help="距離合わせを打ち切って検査を始めるまでの秒数"
+    )
     parser.add_argument("--panel-mm", type=float, default=PANEL_DIAMETER_MM, help="顔画面の直径 mm")
     parser.add_argument("--camera-hfov-deg", type=float, default=53.5, help="カメラの水平画角（度）")
     parser.add_argument("--walk-seconds", type=float, default=0.8, help="近づくときに 1 回で歩く秒数。0 で歩かない")

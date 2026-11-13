@@ -20,7 +20,12 @@ from palmimo_vision_check.vision import distance_from_eyes
 def test_levels_at_three_meters_span_low_to_above_one() -> None:
     levels = eligible_levels(3.0)
     assert levels[0] == 0.3
-    assert levels[-1] == 1.2
+    assert levels[-1] == 1.5
+
+
+def test_levels_shrink_with_a_shorter_distance() -> None:
+    assert (eligible_levels(1.0)[0], eligible_levels(1.0)[-1]) == (0.1, 0.5)
+    assert (eligible_levels(2.0)[0], eligible_levels(2.0)[-1]) == (0.2, 1.0)
 
 
 def test_ring_gap_opens_on_the_named_side() -> None:

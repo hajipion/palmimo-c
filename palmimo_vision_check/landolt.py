@@ -29,8 +29,8 @@ PANEL_DIAMETER_MM = 60.0
 
 PANEL_DIAMETER_PX = 480
 FRAME_SCALE = 2
-MIN_GAP_PX = 2.4
-"""Prototype gate in frame pixels (4.8 panel pixels). Not a JIS tolerance."""
+MIN_GAP_PX = 2.0
+"""Prototype gate in frame pixels (4 panel pixels). Not a JIS tolerance."""
 
 CARDINALS = ("right", "down", "left", "up")
 _ANGLES = {"right": 0.0, "down": 90.0, "left": 180.0, "up": 270.0}

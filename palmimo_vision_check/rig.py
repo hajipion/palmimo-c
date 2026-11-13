@@ -6,6 +6,7 @@ rehearsed without hardware.
 
 import base64
 import logging
+import os
 import queue
 import shutil
 import subprocess
@@ -54,8 +55,18 @@ class Rig:
         from palmimo_sdk import FaceDisplay, HeadCamera, MicStream, Palmimo, Speaker, SpeakerConfig
 
         def speaker_part() -> Any:
-            part = Speaker(SpeakerConfig(lang="ja", device_name_hint=speaker_device or None))
-            part.open()
+            config = SpeakerConfig(lang="ja", device_name_hint=speaker_device or None)
+            try:
+                part = Speaker(config)
+                part.open()
+            except Exception as exc:
+                if not os.environ.get("OPENAI_API_KEY"):
+                    raise
+                from palmimo_sdk import OpenAiEngine
+
+                print(f"[rig] local voice unavailable ({exc!r}); speaking through OpenAI", flush=True)
+                part = Speaker(config, engine=OpenAiEngine())
+                part.open()
             return part
 
         def driver_part() -> Any:

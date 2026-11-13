@@ -232,6 +232,7 @@ def run(args: argparse.Namespace) -> None:
             say(speech.ASK)
             answer = listener.wait_answer(120 if args.dry_run else args.answer_seconds)
             session.answer(answer)
+            say(speech.CORRECT if session.history[-1]["correct"] else speech.WRONG)
             print(f"[trial] answer={answer} correct={session.history[-1]['correct']}", flush=True)
 
         state.frame = None

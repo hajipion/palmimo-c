@@ -5,6 +5,7 @@ description = "Palmimo app: a voice-driven vision check that draws Landolt rings
 license = "Apache-2.0"
 requires-python = ">=3.12"
 dependencies = [
+    "nltk>=3.9,<3.10",
     "numpy>=1.24",
     "onnxruntime>=1.17",
     "openai>=1.40",

@@ -1,7 +1,7 @@
 schema = 1
 name = "vision-check"
 description = "Palmimo が検査員になる視力チェック。顔にランドルト環を出し、声で向きを答えます。参考値で、医療用ではありません。"
-command = ["palmimo-vision-exam", "--port", "{port}", "--distance-m", "{distance_m}", "--settle-seconds", "{settle_seconds}", "--panel-mm", "{panel_mm}", "--walk-seconds", "{walk_seconds}", "--camera-hfov-deg", "{camera_hfov_deg}", "--vision-model", "{vision_model}", "{no_motion}", "{no_voice}"]
+command = ["palmimo-vision-exam", "--port", "{port}", "--distance-m", "{distance_m}", "--settle-seconds", "{settle_seconds}", "--panel-mm", "{panel_mm}", "--walk-seconds", "{walk_seconds}", "--camera-hfov-deg", "{camera_hfov_deg}", "--vision-model", "{vision_model}", "--speaker-device", "{speaker_device}", "{no_motion}", "{no_voice}"]
 url = "http://{host}:{port}/"
 devices = ["camera", "audio", "motor_display"]
 
@@ -52,6 +52,13 @@ type = "string"
 default = "gpt-5-mini"
 pattern = "^[A-Za-z0-9][A-Za-z0-9._/-]{0,127}$"
 description = "手を挙げた人を見つける画像モデル"
+
+[params.speaker_device]
+type = "string"
+default = "ReSpeaker"
+max_length = 64
+pattern = "^[A-Za-z0-9][A-Za-z0-9 ._-]{0,63}$"
+description = "スピーカーの機器名の一部。見つからなければ標準の出力を使う"
 
 [params.no_motion]
 type = "bool"

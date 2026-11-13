@@ -34,6 +34,16 @@ def _probe(label: str, build: Any) -> Any:
         return None
 
 
+def _log_playback_devices() -> None:
+    """Print the ALSA playback cards so a silent speaker can be diagnosed from the log."""
+    if shutil.which("aplay") is None:
+        return
+    listing = subprocess.run(["aplay", "-l"], capture_output=True, text=True, check=False)
+    for line in listing.stdout.splitlines():
+        if line.startswith("card "):
+            print(f"[rig] playback {line}", flush=True)
+
+
 class Rig:
     """Owns the Palmimo facade and the peripherals the exam reads directly.
 
@@ -55,19 +65,25 @@ class Rig:
         from palmimo_sdk import FaceDisplay, HeadCamera, MicStream, Palmimo, Speaker, SpeakerConfig
 
         def speaker_part() -> Any:
-            config = SpeakerConfig(lang="ja", device_name_hint=speaker_device or None)
-            try:
-                part = Speaker(config)
-                part.open()
-            except Exception as exc:
-                if not os.environ.get("OPENAI_API_KEY"):
-                    raise
+            engines: list[tuple[str, Any]] = [("local", None)]
+            if os.environ.get("OPENAI_API_KEY"):
                 from palmimo_sdk import OpenAiEngine
 
-                print(f"[rig] local voice unavailable ({exc!r}); speaking through OpenAI", flush=True)
-                part = Speaker(config, engine=OpenAiEngine())
-                part.open()
-            return part
+                engines.append(("openai", OpenAiEngine()))
+            hints = [speaker_device, None] if speaker_device else [None]
+            last: Exception | None = None
+            for name, engine in engines:
+                for hint in hints:
+                    try:
+                        part = Speaker(SpeakerConfig(lang="ja", device_name_hint=hint), engine=engine)
+                        part.open()
+                    except Exception as exc:
+                        print(f"[rig] voice={name} device={hint!r} failed: {exc!r}", flush=True)
+                        last = exc
+                        continue
+                    print(f"[rig] speaking with voice={name} device={hint or 'ALSA default'}", flush=True)
+                    return part
+            raise RuntimeError(f"no usable speaker: {last!r}")
 
         def driver_part() -> Any:
             from palmimo_sdk import DynamixelDriver
@@ -97,6 +113,7 @@ class Rig:
                 part.open()
             return part
 
+        _log_playback_devices()
         speaker = _probe("speaker", speaker_part)
         self._driver = _probe("servo bus", driver_part) if motion else None
         self._display = _probe("face display", display_part)

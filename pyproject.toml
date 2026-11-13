@@ -9,6 +9,7 @@ dependencies = [
     "onnxruntime>=1.17",
     "openai>=1.40",
     "palmimo-sdk[face,hardware,speech,vision,voice]>=0.1.4,<0.2",
+    "piper-plus>=1.13,<2",
 ]
 
 [tool.uv]

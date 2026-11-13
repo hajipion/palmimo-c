@@ -30,7 +30,7 @@ def distance_from_eyes(eye_px: float, frame_width: int, hfov_deg: float) -> floa
 
 
 class FaceRanger:
-    """Estimate the distance to the largest face in a frame.
+    """Estimate the distance to the face nearest the horizontal center of a frame.
 
     Args:
         hfov_deg: Horizontal field of view of the frames passed to :meth:`distance`.
@@ -49,7 +49,7 @@ class FaceRanger:
         _, faces = self._detector.detect(frame)
         if faces is None or len(faces) == 0:
             return None
-        face = max(faces, key=lambda row: float(row[2]) * float(row[3]))
+        face = min(faces, key=lambda row: abs(float(row[0]) + float(row[2]) / 2 - width / 2))
         eye_px = math.hypot(float(face[4]) - float(face[6]), float(face[5]) - float(face[7]))
         if eye_px < 2:
             return None

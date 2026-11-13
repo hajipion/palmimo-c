@@ -1,5 +1,6 @@
 """Landolt-ring frames sized for the face display and a short staircase protocol."""
 
+import functools
 import math
 import random
 from dataclasses import dataclass, field
@@ -104,11 +105,28 @@ BACKGROUND_RGB = (255, 214, 0)
 """Yellow behind the ring, close to the face's own idle color."""
 
 
+@functools.cache
+def _disc(size: int) -> bytes:
+    """Return the coverage of a centered disc that fills the frame, 255 inside and 0 outside."""
+    center = radius = size / 2
+    mask = bytearray(size * size)
+    for y in range(size):
+        for x in range(size):
+            edge = radius - math.hypot(x + 0.5 - center, y + 0.5 - center)
+            mask[y * size + x] = round(255 * min(max(edge + 0.5, 0.0), 1.0))
+    return bytes(mask)
+
+
 def tint(gray: bytes, background: tuple[int, int, int] = BACKGROUND_RGB) -> list[tuple[int, int, int]]:
-    """Map a GRAY8 frame onto a colored background: 255 becomes the background, 0 stays black."""
+    """Map a square GRAY8 frame onto a round colored background.
+
+    White becomes the background color inside the disc, ink stays black, and
+    everything outside the disc is black so the face shows a circle, not a square.
+    """
     red, green, blue = background
     table = [(red * v // 255, green * v // 255, blue * v // 255) for v in range(256)]
-    return [table[v] for v in gray]
+    disc = _disc(math.isqrt(len(gray)))
+    return [table[v * m // 255] for v, m in zip(gray, disc, strict=True)]
 
 
 def to_rgb565(gray: bytes, background: tuple[int, int, int] = BACKGROUND_RGB) -> bytes:

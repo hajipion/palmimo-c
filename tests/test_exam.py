@@ -40,7 +40,19 @@ def test_ring_gap_opens_on_the_named_side() -> None:
 
 
 def test_rgb565_keeps_black_ink_on_a_yellow_background() -> None:
-    assert to_rgb565(bytes([255, 0])) == (0xFEA0).to_bytes(2, "little") + b"\x00\x00"
+    frame = to_rgb565(render_gray8(10.0, "up"))
+    center = (FRAME_PX // 2 * FRAME_PX + FRAME_PX // 2) * 2
+    ink = ((FRAME_PX // 2 + 20) * FRAME_PX + FRAME_PX // 2) * 2
+    assert frame[center : center + 2] == (0xFEA0).to_bytes(2, "little")
+    assert frame[ink : ink + 2] == b"\x00\x00"
+
+
+def test_background_is_a_disc_with_black_corners() -> None:
+    frame = to_rgb565(render_gray8(10.0, "up"))
+    assert frame[0:2] == b"\x00\x00"
+    assert frame[-2:] == b"\x00\x00"
+    edge = (FRAME_PX // 2 * FRAME_PX + 2) * 2
+    assert frame[edge : edge + 2] == (0xFEA0).to_bytes(2, "little")
 
 
 def test_ring_too_large_for_the_frame_is_rejected() -> None:

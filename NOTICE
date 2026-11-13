@@ -1,0 +1,14 @@
+palmimo vision-check
+Copyright 2026 Forte Inc.
+
+This product includes software and data from third parties:
+
+- palmimo_vision_check/vad.py is copied from the Palmimo DevKit example
+  examples/agents/wakeword/palmimo_wakeword_agent/vad.py
+  (https://github.com/Jizai-inc/palmimo-devkit), Copyright 2026 Jizai Inc.,
+  licensed under the Apache License, Version 2.0.
+- palmimo_vision_check/models/face_detection_yunet_2023mar.onnx is the YuNet
+  face detector from OpenCV Zoo (https://github.com/opencv/opencv_zoo),
+  licensed under the MIT License.
+- The Silero VAD model (https://github.com/snakers4/silero-vad, MIT License)
+  is downloaded at first run and is not part of this repository.

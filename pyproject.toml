@@ -1,0 +1,45 @@
+[project]
+name = "palmimo-vision-check"
+version = "0.1.0"
+description = "Palmimo app: a voice-driven vision check that draws Landolt rings on the face display"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.24",
+    "onnxruntime>=1.17",
+    "openai>=1.40",
+    "palmimo-sdk[face,hardware,speech,vision,voice]>=0.1.4,<0.2",
+]
+
+[tool.uv]
+package = true
+
+[project.scripts]
+palmimo-vision-exam = "palmimo_vision_check.exam:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["palmimo_vision_check/vad.py"]
+
+[tool.ruff.lint.per-file-ignores]
+"palmimo_vision_check/rig.py" = ["BLE001"]
+"palmimo_vision_check/exam.py" = ["BLE001"]
+
+[tool.mypy]
+disallow_untyped_defs = true
+ignore_missing_imports = true
+files = ["palmimo_vision_check", "tests"]

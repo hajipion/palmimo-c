@@ -1,0 +1,64 @@
+schema = 1
+name = "vision-check"
+description = "Palmimo が検査員になる視力チェック。顔にランドルト環を出し、声で向きを答えます。参考値で、医療用ではありません。"
+command = ["palmimo-vision-exam", "--port", "{port}", "--distance-m", "{distance_m}", "--panel-mm", "{panel_mm}", "--walk-seconds", "{walk_seconds}", "--camera-hfov-deg", "{camera_hfov_deg}", "--vision-model", "{vision_model}", "{no_motion}", "{no_voice}"]
+url = "http://{host}:{port}/"
+devices = ["camera", "audio", "motor_display"]
+
+[params.port]
+type = "int"
+default = 8010
+min = 1024
+max = 65535
+description = "予備の回答ページのポート番号"
+
+[params.distance_m]
+type = "float"
+default = 3.0
+min = 0.5
+max = 10
+description = "検査する距離（m）。環の大きさはこの距離で決まる"
+
+[params.panel_mm]
+type = "float"
+default = 60.0
+min = 20
+max = 150
+description = "顔画面の光っている部分の直径（mm）。環の大きさはこの値で決まる"
+
+[params.walk_seconds]
+type = "float"
+default = 0.8
+min = 0
+max = 2
+description = "近づくときに 1 回で歩く秒数。0 で歩かない"
+
+[params.camera_hfov_deg]
+type = "float"
+default = 53.5
+min = 20
+max = 160
+description = "カメラの水平画角（度）。距離の読みがずれるときに直す"
+
+[params.vision_model]
+type = "string"
+default = "gpt-5-mini"
+pattern = "^[A-Za-z0-9][A-Za-z0-9._/-]{0,127}$"
+description = "手を挙げた人を見つける画像モデル"
+
+[params.no_motion]
+type = "bool"
+default = false
+flag = "--no-motion"
+description = "脚と首を動かさない"
+
+[params.no_voice]
+type = "bool"
+default = false
+flag = "--no-voice"
+description = "マイクを使わず、ページのボタンで答える"
+
+[env.OPENAI_API_KEY]
+required = false
+description = "声の文字起こしと、手を挙げた人の判定に使う OpenAI の API キー"
+help_url = "https://platform.openai.com/api-keys"
